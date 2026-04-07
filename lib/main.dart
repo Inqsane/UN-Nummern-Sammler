@@ -263,115 +263,164 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void showInfoDialog() {
-    // Nur laden, wenn noch nichts vorhanden ist und wir nicht schon laden
-    if (!latestReleaseLoading &&
-        latestReleaseTag == null &&
-        latestReleaseError == null) {
-      fetchLatestRelease();
-    }
-
     showDialog(
       context: context,
       builder: (ctx) {
-        return AlertDialog(
-          title: Row(
-            children: [
-              const Icon(Icons.info_outline),
-              const SizedBox(width: 10),
-              const Text("Info"),
-            ],
-          ),
-          content: SingleChildScrollView(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  "UN Sammler",
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: 8),
+        return StatefulBuilder(
+          builder: (ctx, setDialogState) {
+            Future<void> refresh() async {
+              setDialogState(() {
+                latestReleaseLoading = true;
+                latestReleaseError = null;
+              });
 
-                Text("Version: $_appVersion"),
-                const SizedBox(height: 12),
+              try {
+                final uri = Uri.parse(
+                  "https://api.github.com/repos/Inqsane/UN-Nummern-Sammler/releases/latest",
+                );
 
-                const Text("Neuste Version (GitHub Release Tag)"),
-                const SizedBox(height: 6),
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.system_update_alt),
-                  title: const Text("Neuste Version"),
-                  subtitle: Text(
-                    latestReleaseLoading
-                        ? "Lade…"
-                        : (latestReleaseTag != null
-                            ? latestReleaseTag!
-                            : (latestReleaseError ?? "—")),
-                  ),
-                  onTap: (latestReleaseUrl != null)
-                      ? () => _openExternal(latestReleaseUrl!)
-                      : () => _openExternal(_releasesUrl),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.open_in_new),
-                    tooltip: "Releases öffnen",
-                    onPressed: () => _openExternal(_releasesUrl),
-                  ),
-                ),
-                if (latestReleasePublishedAt != null) ...[
-                  Padding(
-                    padding: const EdgeInsets.only(left: 56, bottom: 8),
-                    child: Text(
-                      "Veröffentlicht am: ${_formatIsoDate(latestReleasePublishedAt!.toLocal())}",
+                final res = await http.get(uri, headers: {
+                  "Accept": "application/vnd.github+json",
+                  "User-Agent": "UN-Sammler-App",
+                });
+
+                if (res.statusCode != 200) {
+                  throw Exception("HTTP ${res.statusCode}");
+                }
+
+                final data = json.decode(res.body) as Map<String, dynamic>;
+                final tag = (data["tag_name"] ?? "").toString().trim();
+                final htmlUrl = (data["html_url"] ?? "").toString().trim();
+                final publishedAtStr =
+                    (data["published_at"] ?? "").toString().trim();
+
+                setDialogState(() {
+                  latestReleaseTag = tag.isEmpty ? null : tag;
+                  latestReleaseUrl = htmlUrl.isEmpty ? null : htmlUrl;
+                  latestReleasePublishedAt = publishedAtStr.isEmpty
+                      ? null
+                      : DateTime.tryParse(publishedAtStr);
+                });
+              } catch (e) {
+                setDialogState(() {
+                  latestReleaseError =
+                      "Konnte neuste Version nicht laden (${e.toString()})";
+                });
+              } finally {
+                setDialogState(() {
+                  latestReleaseLoading = false;
+                });
+              }
+            }
+
+            // Beim ersten Öffnen automatisch laden (nur wenn noch nichts da ist)
+            if (!latestReleaseLoading &&
+                latestReleaseTag == null &&
+                latestReleaseError == null) {
+              Future.microtask(refresh);
+            }
+
+            return AlertDialog(
+              title: Row(
+                children: [
+                  const Icon(Icons.info_outline),
+                  const SizedBox(width: 10),
+                  const Text("Info"),
+                ],
+              ),
+              content: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "UN Sammler",
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    const SizedBox(height: 8),
+
+                    Text("Version: $_appVersion"),
+                    const SizedBox(height: 12),
+
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.system_update_alt),
+                      title: const Text("Neuste Version"),
+                      subtitle: Text(
+                        latestReleaseLoading
+                            ? "Lade…"
+                            : (latestReleaseTag ??
+                                (latestReleaseError ?? "—")),
+                      ),
+                      onTap: () => _openExternal(
+                        latestReleaseUrl ?? _releasesUrl,
+                      ),
+                      trailing: IconButton(
+                        icon: const Icon(Icons.refresh),
+                        tooltip: "Aktualisieren",
+                        onPressed: latestReleaseLoading ? null : refresh,
+                      ),
+                    ),
+                    if (latestReleasePublishedAt != null) ...[
+                      Padding(
+                        padding: const EdgeInsets.only(left: 56, bottom: 8),
+                        child: Text(
+                          "Veröffentlicht am: ${_formatIsoDate(latestReleasePublishedAt!.toLocal())}",
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ),
+                    ],
+
+                    const Divider(height: 20),
+
+                    const Text("Links"),
+                    const SizedBox(height: 6),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.code),
+                      title: const Text("GitHub Repo"),
+                      subtitle: Text(_repoUrl),
+                      onTap: () => _openExternal(_repoUrl),
+                    ),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.open_in_new),
+                      title: const Text("Releases"),
+                      subtitle: Text(_releasesUrl),
+                      onTap: () => _openExternal(_releasesUrl),
+                    ),
+
+                    const Divider(height: 20),
+
+                    const Text("Kontakt"),
+                    const SizedBox(height: 6),
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.chat_bubble_outline),
+                      title: const Text("Discord ID"),
+                      subtitle: Text(_discordId),
+                    ),
+
+                    const Divider(height: 20),
+
+                    const Text("Hinweise"),
+                    const SizedBox(height: 6),
+                    Text(
+                      "• UN-/Gefahrgutdaten sind auf Englisch (Quelle/DB: Englisch).\n"
+                      "• Gespeicherte UNs werden lokal auf deinem Gerät gespeichert (SharedPreferences).\n"
+                      "• Online-Suche öffnet den Browser/externen Anbieter (Google/DuckDuckGo/Wikipedia).",
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
-                  ),
-                ],
-
-                const Divider(height: 20),
-
-                const Text("Links"),
-                const SizedBox(height: 6),
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.code),
-                  title: const Text("GitHub Repo"),
-                  subtitle: Text(_repoUrl),
-                  onTap: () => _openExternal(_repoUrl),
+                  ],
                 ),
-
-                const Divider(height: 20),
-
-                const Text("Kontakt"),
-                const SizedBox(height: 6),
-                ListTile(
-                  contentPadding: EdgeInsets.zero,
-                  leading: const Icon(Icons.chat_bubble_outline),
-                  title: const Text("Discord ID"),
-                  subtitle: Text(_discordId),
-                ),
-
-                const Divider(height: 20),
-
-                const Text("Hinweise"),
-                const SizedBox(height: 6),
-                Text(
-                  "• UN-/Gefahrgutdaten sind auf Englisch (Quelle/DB: Englisch).\n"
-                  "• Gespeicherte UNs werden lokal auf deinem Gerät gespeichert (SharedPreferences).\n"
-                  "• Online-Suche öffnet den Browser/externen Anbieter (Google/DuckDuckGo/Wikipedia).",
-                  style: Theme.of(context).textTheme.bodySmall,
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text("Schließen"),
                 ),
               ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text("Schließen"),
-            ),
-            TextButton(
-              onPressed: latestReleaseLoading ? null : fetchLatestRelease,
-              child: const Text("Aktualisieren"),
-            ),
-          ],
+            );
+          },
         );
       },
     );
@@ -618,7 +667,9 @@ class _HomeScreenState extends State<HomeScreen> {
           "https://www.google.com/search?q=${Uri.encodeComponent(q)}+ADR",
         );
       case SearchProvider.duckduckgo:
-        return Uri.parse("https://duckduckgo.com/?q=${Uri.encodeComponent(q)}+ADR");
+        return Uri.parse(
+          "https://duckduckgo.com/?q=${Uri.encodeComponent(q)}+ADR",
+        );
       case SearchProvider.wikipedia:
         return Uri.parse(
           "https://en.wikipedia.org/wiki/Special:Search?search=${Uri.encodeComponent(q)}+ADR",
@@ -841,6 +892,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             const SizedBox(height: 16),
+
             TextField(
               controller: unController,
               keyboardType: TextInputType.number,
@@ -863,6 +915,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             const SizedBox(height: 16),
+
             if (unName != null)
               Card(
                 elevation: 0,
@@ -967,6 +1020,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
+
             const Spacer(),
             Text(
               "Die aktuelle Version ist NUR in Englisch verfügbar, da die UN-Datenbank auf Englisch ist. Eine deutsche Version könnte in Zukunft folgen.",
