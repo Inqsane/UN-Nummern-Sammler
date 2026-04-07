@@ -31,6 +31,9 @@ flutter pub get
 flutter build apk --release
 ```
 
+## Hinweis zum download auf Android:
+- Die neuste APK findet man immer unter https://github.com/Inqsane/UN-Nummern-Sammler/releases
+
 ## Hinweis zur Eingabe
 UN-Nummern sind **4-stellig**.  
 Wenn du z.B. `1` suchst, musst du `0001` eingeben.
