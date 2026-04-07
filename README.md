@@ -15,7 +15,7 @@ Wenn ihr Feedback oder Bugs findet: DM **inqsane** auf discord.
 
 - Einige UN-Nummern werden nicht gefunden, wenn sie nicht in der lokalen JSON-Datenbank enthalten sind.
 - Die Eingabe von UN-Nummern mit weniger als 4 Ziffern kann zu keinem Ergebnis führen (z.B. "1" statt "0001").
-- ~Die automatische Erkennung von Unterklassen basiert auf Heuristiken und kann in Einzelfällen falsch sein.~
+- ~Die automatische Erkennung von Unterklassen basiert auf Heuristiken und kann in Einzelfällen falsch sein.~ Jedoch können einzelne UNs immernoch falsche Klassen haben da diese mit dem gleichen Prinzip ausgewertet wurden.
 - Manche Symbole werden nicht angezeigt, wenn die entsprechende Asset-Datei fehlt oder falsch benannt ist.
 - Die Online-Suche hängt von externen Apps/Browsern ab und kann fehlschlagen, wenn keine verfügbar sind.
 - Gespeicherte UN-Einträge werden lokal gespeichert; beim Löschen der App-Daten gehen diese verloren.
