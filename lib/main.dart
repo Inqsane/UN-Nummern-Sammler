@@ -194,7 +194,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // ====== About / Info ======
 
-  static const String _appVersion = "v1.1.0";
+  static const String _appVersion = "v1.1.1";
   static const String _repoUrl = "https://github.com/Inqsane/UN-Nummern-Sammler";
   static const String _releasesUrl =
       "https://github.com/Inqsane/UN-Nummern-Sammler/releases";
