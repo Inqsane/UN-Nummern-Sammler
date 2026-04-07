@@ -58,5 +58,18 @@ Die UN-Daten liegen in:
 
 Falls du die Datei änderst, achte darauf, dass sie auch in der `pubspec.yaml` als Asset eingetragen ist.
 
+## Unser Team
+
+<p>
+  <img src="pfp/p1.webp" width="120" />
+  <img src="pfp/p2.webp" width="120" />
+  <img src="pfp/p3.gif"  width="120" />
+  <img src="pfp/p4.gif"  width="120" />
+  <img src="pfp/p5.webp" width="120" />
+</p>
+
+Links nach rechts: Frontend-Dev, Frontend-Dev, UI Designer, Developer, Manager/Developer
+Danke an alle aus dem Team die bei diesem Projekt mithelfen.
+
 ## Lizenz
 Aktuell keine spezielle Lizenz angegeben. Sollte etwas am Projekt verändert werden bitte das inqsane per discord mitteilen. Danke
