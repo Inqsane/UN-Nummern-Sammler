@@ -406,8 +406,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(height: 6),
                     Text(
                       "• UN-/Gefahrgutdaten sind auf Englisch (Quelle/DB: Englisch).\n"
-                      "• Gespeicherte UNs werden lokal auf deinem Gerät gespeichert (SharedPreferences).\n"
-                      "• Online-Suche öffnet den Browser/externen Anbieter (Google/DuckDuckGo/Wikipedia).",
+                      "• Gespeicherte UNs werden lokal auf deinem Gerät gespeichert (SharedPreferences).\n",
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
