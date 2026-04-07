@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -109,7 +110,6 @@ class _HomeScreenState extends State<HomeScreen> {
   String? unName;
   String? unKlasse;
 
-  bool settingUseSubclassHeuristics = true;
   SearchProvider settingSearchProvider = SearchProvider.google;
   bool settingConfirmDeleteAll = true;
 
@@ -164,7 +164,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // settings block
 
-  static const _prefUseSubclassHeuristics = 'setting_use_subclass_heuristics';
   static const _prefSearchProvider = 'setting_search_provider';
   static const _prefConfirmDeleteAll = 'setting_confirm_delete_all';
 
@@ -172,9 +171,6 @@ class _HomeScreenState extends State<HomeScreen> {
     final prefs = await SharedPreferences.getInstance();
 
     setState(() {
-      settingUseSubclassHeuristics =
-          prefs.getBool(_prefUseSubclassHeuristics) ?? true;
-
       final providerStr = prefs.getString(_prefSearchProvider) ?? 'google';
       settingSearchProvider = switch (providerStr) {
         'duckduckgo' => SearchProvider.duckduckgo,
@@ -188,16 +184,197 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> persistSettings() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(
-      _prefUseSubclassHeuristics,
-      settingUseSubclassHeuristics,
-    );
     await prefs.setString(_prefSearchProvider, switch (settingSearchProvider) {
       SearchProvider.duckduckgo => 'duckduckgo',
       SearchProvider.wikipedia => 'wikipedia',
       SearchProvider.google => 'google',
     });
     await prefs.setBool(_prefConfirmDeleteAll, settingConfirmDeleteAll);
+  }
+
+  // ====== About / Info ======
+
+  static const String _appVersion = "v1.0.0";
+  static const String _repoUrl = "https://github.com/Inqsane/UN-Nummern-Sammler";
+  static const String _releasesUrl =
+      "https://github.com/Inqsane/UN-Nummern-Sammler/releases";
+  static const String _discordId = "Inqsane";
+
+  String? latestReleaseTag;
+  String? latestReleaseUrl;
+  DateTime? latestReleasePublishedAt;
+  bool latestReleaseLoading = false;
+  String? latestReleaseError;
+
+  Future<void> _openExternal(String url) async {
+    final uri = Uri.parse(url);
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
+  Future<void> fetchLatestRelease() async {
+    setState(() {
+      latestReleaseLoading = true;
+      latestReleaseError = null;
+    });
+
+    try {
+      final uri = Uri.parse(
+        "https://api.github.com/repos/Inqsane/UN-Nummern-Sammler/releases/latest",
+      );
+
+      final res = await http.get(uri, headers: {
+        "Accept": "application/vnd.github+json",
+        "User-Agent": "UN-Sammler-App",
+      });
+
+      if (res.statusCode != 200) {
+        throw Exception("HTTP ${res.statusCode}");
+      }
+
+      final data = json.decode(res.body) as Map<String, dynamic>;
+      final tag = (data["tag_name"] ?? "").toString().trim();
+      final htmlUrl = (data["html_url"] ?? "").toString().trim();
+      final publishedAtStr = (data["published_at"] ?? "").toString().trim();
+
+      setState(() {
+        latestReleaseTag = tag.isEmpty ? null : tag;
+        latestReleaseUrl = htmlUrl.isEmpty ? null : htmlUrl;
+        latestReleasePublishedAt = publishedAtStr.isEmpty
+            ? null
+            : DateTime.tryParse(publishedAtStr);
+      });
+    } catch (e) {
+      setState(() {
+        latestReleaseError =
+            "Konnte neuste Version nicht laden (${e.toString()})";
+      });
+    } finally {
+      setState(() {
+        latestReleaseLoading = false;
+      });
+    }
+  }
+
+  String _formatIsoDate(DateTime dt) {
+    final y = dt.year.toString().padLeft(4, '0');
+    final m = dt.month.toString().padLeft(2, '0');
+    final d = dt.day.toString().padLeft(2, '0');
+    return "$y-$m-$d";
+  }
+
+  void showInfoDialog() {
+    // Nur laden, wenn noch nichts vorhanden ist und wir nicht schon laden
+    if (!latestReleaseLoading &&
+        latestReleaseTag == null &&
+        latestReleaseError == null) {
+      fetchLatestRelease();
+    }
+
+    showDialog(
+      context: context,
+      builder: (ctx) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              const Icon(Icons.info_outline),
+              const SizedBox(width: 10),
+              const Text("Info"),
+            ],
+          ),
+          content: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "UN Sammler",
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+
+                Text("Version: $_appVersion"),
+                const SizedBox(height: 12),
+
+                const Text("Neuste Version (GitHub Release Tag)"),
+                const SizedBox(height: 6),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.system_update_alt),
+                  title: const Text("Neuste Version"),
+                  subtitle: Text(
+                    latestReleaseLoading
+                        ? "Lade…"
+                        : (latestReleaseTag != null
+                            ? latestReleaseTag!
+                            : (latestReleaseError ?? "—")),
+                  ),
+                  onTap: (latestReleaseUrl != null)
+                      ? () => _openExternal(latestReleaseUrl!)
+                      : () => _openExternal(_releasesUrl),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.open_in_new),
+                    tooltip: "Releases öffnen",
+                    onPressed: () => _openExternal(_releasesUrl),
+                  ),
+                ),
+                if (latestReleasePublishedAt != null) ...[
+                  Padding(
+                    padding: const EdgeInsets.only(left: 56, bottom: 8),
+                    child: Text(
+                      "Veröffentlicht am: ${_formatIsoDate(latestReleasePublishedAt!.toLocal())}",
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ),
+                ],
+
+                const Divider(height: 20),
+
+                const Text("Links"),
+                const SizedBox(height: 6),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.code),
+                  title: const Text("GitHub Repo"),
+                  subtitle: Text(_repoUrl),
+                  onTap: () => _openExternal(_repoUrl),
+                ),
+
+                const Divider(height: 20),
+
+                const Text("Kontakt"),
+                const SizedBox(height: 6),
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: const Icon(Icons.chat_bubble_outline),
+                  title: const Text("Discord ID"),
+                  subtitle: Text(_discordId),
+                ),
+
+                const Divider(height: 20),
+
+                const Text("Hinweise"),
+                const SizedBox(height: 6),
+                Text(
+                  "• UN-/Gefahrgutdaten sind auf Englisch (Quelle/DB: Englisch).\n"
+                  "• Gespeicherte UNs werden lokal auf deinem Gerät gespeichert (SharedPreferences).\n"
+                  "• Online-Suche öffnet den Browser/externen Anbieter (Google/DuckDuckGo/Wikipedia).",
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: const Text("Schließen"),
+            ),
+            TextButton(
+              onPressed: latestReleaseLoading ? null : fetchLatestRelease,
+              child: const Text("Aktualisieren"),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   void showSettingsSheet() {
@@ -290,20 +467,6 @@ class _HomeScreenState extends State<HomeScreen> {
                           },
                         );
                       },
-                    ),
-
-                    const Divider(),
-
-                    SwitchListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: const Text("Unterklassen automatisch ableiten"),
-                      subtitle: const Text(
-                        "Leitet z.B. 2 -> 2.1/2.2/2.3, 4 -> 4.1/4.2/4.3, 5 -> 5.1/5.2, 6 -> 6.1/6.2 anhand des Namens ab.",
-                      ),
-                      value: settingUseSubclassHeuristics,
-                      onChanged: (v) => update(() {
-                        settingUseSubclassHeuristics = v;
-                      }),
                     ),
 
                     const Divider(),
@@ -405,169 +568,6 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-
-  String? normalizeHazardClassHeuristic({
-    required String? rawClass,
-    required String? substanceName,
-  }) {
-    if (rawClass == null) return null;
-    final k = rawClass.trim();
-    if (k.isEmpty) return null;
-
-    if (k.contains('.')) return k;
-
-    if (!settingUseSubclassHeuristics) return k;
-
-    final n = (substanceName ?? '').toLowerCase();
-
-    switch (k) {
-      case '2':
-        // 2
-        const toxicHints = <String>[
-          'toxic',
-          'poison',
-          'inhalation hazard',
-          'phosgene',
-          'cyanogen',
-          'arsine',
-          'phosphine',
-          'hydrogen cyanide',
-          'chlorine',
-          'hydrogen sulfide',
-          'sulfur dioxide',
-        ];
-        for (final w in toxicHints) {
-          if (n.contains(w)) return '2.3';
-        }
-
-        const flammableHints = <String>[
-          'flammable',
-          'acetylene',
-          'hydrogen',
-          'methane',
-          'propane',
-          'butane',
-          'butylene',
-          'isobutane',
-          'isobutylene',
-          'propene',
-          'propylene',
-          'ethane',
-          'ethylene',
-          'cyclopropane',
-          'natural gas',
-          'lpg',
-          'petroleum gas',
-        ];
-        for (final w in flammableHints) {
-          if (n.contains(w)) return '2.1';
-        }
-
-        return '2.2';
-
-      case '4':
-        // 4
-        const wetHints = <String>[
-          'water-reactive',
-          'dangerous when wet',
-          'with water',
-          'reacts with water',
-          'sodium',
-          'potassium',
-          'lithium',
-          'calcium carbide',
-          'aluminium phosphide',
-          'magnesium phosphide',
-          'calcium phosphide',
-          'zinc phosphide',
-        ];
-        for (final w in wetHints) {
-          if (n.contains(w)) return '4.3';
-        }
-
-        const selfHeatHints = <String>[
-          'self-heating',
-          'spontaneously combustible',
-          'pyrophoric',
-          'charcoal',
-          'carbon, activated',
-          'metal catalyst',
-          'oily',
-          'fish meal, unstabilized',
-          'seed cake',
-          'cotton waste, oily',
-          'rags, oily',
-        ];
-        for (final w in selfHeatHints) {
-          if (n.contains(w)) return '4.2';
-        }
-
-        // Default: 4.1
-        return '4.1';
-
-      case '5':
-        // 5.1 oxidizing substances
-        // 5.2 organic peroxides
-        const peroxideHints = <String>[
-          'peroxide',
-          'organic peroxide',
-          'peroxy',
-          'hydroperoxide',
-          'benzoyl peroxide',
-          'lauroyl peroxide',
-          'dicumyl peroxide',
-        ];
-        for (final w in peroxideHints) {
-          if (n.contains(w)) return '5.2';
-        }
-        return '5.1';
-
-      case '6':
-        // 6.1 toxic substances
-        // 6.2 infectious substances
-        const infectiousHints = <String>[
-          'infectious',
-          'biological substance',
-          'medical waste',
-          'clinical waste',
-          'category b',
-          'affecting humans',
-          'affecting animals',
-        ];
-        for (final w in infectiousHints) {
-          if (n.contains(w)) return '6.2';
-        }
-        return '6.1';
-
-      default:
-        return k;
-    }
-  }
-
-  String? classForSymbol({
-    required String? derivedOrRawClass,
-    required String? substanceName,
-  }) {
-    if (derivedOrRawClass == null) return null;
-    final c = derivedOrRawClass.trim();
-    if (c.isEmpty) return null;
-
-    if (c.contains('.')) return c;
-
-    if (settingUseSubclassHeuristics) {
-      return normalizeHazardClassHeuristic(
-        rawClass: c,
-        substanceName: substanceName,
-      );
-    }
-
-    if (c == '2') return '2.2';
-    if (c == '4') return '4.1';
-    if (c == '5') return '5.1';
-    if (c == '6') return '6.1';
-    return c;
-  }
-
   String formatDate(DateTime dt) {
     final d = dt.day.toString().padLeft(2, '0');
     final m = dt.month.toString().padLeft(2, '0');
@@ -615,13 +615,13 @@ class _HomeScreenState extends State<HomeScreen> {
     switch (settingSearchProvider) {
       case SearchProvider.google:
         return Uri.parse(
-          "https://www.google.com/search?q=${Uri.encodeComponent(q)}",
+          "https://www.google.com/search?q=${Uri.encodeComponent(q)}+ADR",
         );
       case SearchProvider.duckduckgo:
-        return Uri.parse("https://duckduckgo.com/?q=${Uri.encodeComponent(q)}");
+        return Uri.parse("https://duckduckgo.com/?q=${Uri.encodeComponent(q)}+ADR");
       case SearchProvider.wikipedia:
         return Uri.parse(
-          "https://en.wikipedia.org/wiki/Special:Search?search=${Uri.encodeComponent(q)}",
+          "https://en.wikipedia.org/wiki/Special:Search?search=${Uri.encodeComponent(q)}+ADR",
         );
     }
   }
@@ -723,11 +723,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         final name = datenbank[un]?["name"] ?? "-";
                         final klasse = datenbank[un]?["klasse"];
 
-                        final derivedClass = normalizeHazardClassHeuristic(
-                          rawClass: klasse,
-                          substanceName: name,
-                        );
-
                         return ListTile(
                           contentPadding: EdgeInsets.zero,
                           leading: CircleAvatar(
@@ -738,7 +733,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           title: Text("UN $un: $name"),
                           subtitle: Text(
                             "Gespeichert am: ${datum.isEmpty ? "—" : datum}"
-                            "${(derivedClass != null && derivedClass.isNotEmpty) ? " • Klasse: $derivedClass" : ""}",
+                            "${(klasse != null && klasse.isNotEmpty) ? " • Klasse: $klasse" : ""}",
                           ),
                           trailing: Wrap(
                             spacing: 6,
@@ -772,25 +767,20 @@ class _HomeScreenState extends State<HomeScreen> {
     final eingabe = unController.text.trim();
     final savedAt = eingabe.isEmpty ? null : gespeicherterZeitpunkt(eingabe);
 
-    final derivedClass = normalizeHazardClassHeuristic(
-      rawClass: unKlasse,
-      substanceName: unName,
-    );
-
-    final symbolClass = classForSymbol(
-      derivedOrRawClass: derivedClass ?? unKlasse,
-      substanceName: unName,
-    );
-
-    final symbolKey = symbolClass?.replaceAll('.', '');
-    final symbolAssetPath = (symbolKey == null)
-        ? null
-        : "assets/symbole/$symbolKey.png";
+    final klasse = unKlasse;
+    final symbolKey = (klasse ?? '').replaceAll('.', '');
+    final symbolAssetPath =
+        symbolKey.isEmpty ? null : "assets/symbole/$symbolKey.png";
 
     return Scaffold(
       appBar: AppBar(
         title: const Text("UN Sammler"),
         actions: [
+          IconButton(
+            onPressed: showInfoDialog,
+            icon: const Icon(Icons.info_outline),
+            tooltip: "Info",
+          ),
           IconButton(
             onPressed: showSettingsSheet,
             icon: const Icon(Icons.settings_outlined),
@@ -851,7 +841,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
             TextField(
               controller: unController,
               keyboardType: TextInputType.number,
@@ -874,7 +863,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             const SizedBox(height: 16),
-
             if (unName != null)
               Card(
                 elevation: 0,
@@ -917,9 +905,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         spacing: 8,
                         runSpacing: 8,
                         children: [
-                          if (derivedClass != null && derivedClass.isNotEmpty)
+                          if (klasse != null && klasse.isNotEmpty)
                             Chip(
-                              label: Text("Klasse: $derivedClass"),
+                              label: Text("Klasse: $klasse"),
                               avatar: const Icon(Icons.category_outlined),
                             ),
                           if (savedAt != null)
@@ -979,7 +967,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-
             const Spacer(),
             Text(
               "Die aktuelle Version ist NUR in Englisch verfügbar, da die UN-Datenbank auf Englisch ist. Eine deutsche Version könnte in Zukunft folgen.",
