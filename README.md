@@ -5,6 +5,12 @@ Die Idee hatte ich auf einer Autofahrt während ich mit dem Kennzeichensammler K
 
 Wenn ihr Feedback oder Bugs findet: DM **inqsane** auf discord.
 
+## Hinweis zu Bug Reporting / Feedback:
+- Bitte Datenbankenfehler sofort melden, z.b. wenn eine Klasse falsch eingetragen ist.
+- Bitte Übersetzungsfehler (Ja ich arbeite an einer deutschen Übersetzung) sofort melden.
+- Bitte Formatierungsfehler (Sowohl auf Github als auch in der App) bitte melden.
+- Alles was in Zusammenhang mit einer UN Nummer steht bezieht sich auf die Datenbank, das bitte beachten.
+
 ## Features
 - Suche nach UN-Nummern (4-stellig, z.B. `0001` oder `0023`)
 - Datenquelle: `assets/un_with_class.json`
