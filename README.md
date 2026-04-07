@@ -15,8 +15,8 @@ Wenn ihr Feedback oder Bugs findet: DM **inqsane** auf discord.
 - (Optional) Android Studio / VS Code
 
 ## Voraussetzungen für Android (APK):
-Mindest Android Version: Android 4.1
-Maximale Android Version: Android 16
+- Mindest Android Version: Android 4.1
+- Maximale Android Version: Android 16
 
 ## Projekt starten
 ```bash
