@@ -1,17 +1,45 @@
-# un_sammler
+# UN-Nummern Sammler
 
-A new Flutter project.
+Kleine Flutter-App zum sammeln von UN-Nummern.
+Die Idee hatte ich auf einer Autofahrt während ich mit dem Kennzeichensammler Kennzeichen gesammelt habe.
 
-## Getting Started
+Wenn ihr Feedback oder Bugs findet: DM **inqsane** auf discord.
 
-This project is a starting point for a Flutter application.
+## Features
+- Suche nach UN-Nummern (4-stellig, z.B. `0001` oder `0023`)
+- Datenquelle: `assets/un_with_class.json`
+- Einstellungen ig
 
-A few resources to get you started if this is your first Flutter project:
+## Voraussetzungen
+- Flutter SDK installiert
+- (Optional) Android Studio / VS Code
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## Voraussetzungen für Android (APK):
+Mindest Android Version: Android 4.1
+Maximale Android Version: Android 16
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Projekt starten
+```bash
+flutter pub get
+flutter run
+1
+```
+## Projekt zu APK umwandeln
+```bash
+flutter clean
+flutter pub get
+flutter build apk --release
+```
+
+## Hinweis zur Eingabe
+UN-Nummern sind **4-stellig**.  
+Wenn du z.B. `1` suchst, musst du `0001` eingeben.
+
+## Daten / JSON
+Die UN-Daten liegen in:
+- `assets/un_with_class.json` 
+
+Falls du die Datei änderst, achte darauf, dass sie auch in der `pubspec.yaml` als Asset eingetragen ist.
+
+## Lizenz
+Aktuell keine spezielle Lizenz angegeben. Sollte etwas am Projekt verändert werden bitte das inqsane per discord mitteilen. Danke
