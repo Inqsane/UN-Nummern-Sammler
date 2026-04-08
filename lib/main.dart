@@ -8,6 +8,38 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+const String licensesAttributionText = 
+  "UN-Nummern (Daten): basieren auf Wikipedia („Lists of UN numbers“). "
+  "Lizenz: CC BY-SA (Wikipedia). Inhalte können formatiert/gekürzt worden sein.\n\n"
+
+  "Gefahrgutklassen-Symbole (Bilder): stammen aus Wikimedia Commons/Wikipedia-Dateiseiten. "
+  "Die Lizenzen sind je Datei unterschiedlich (Public Domain/CC0 sowie CC BY-SA/GFDL). "
+  "Die Symbole wurden ggf. konvertiert (z.B. SVG → PNG) und skaliert.\n\n"
+
+  "Quelle/Autorenhinweis: Wikimedia Commons contributors / die jeweils auf der Dateiseite genannten Autoren.\n"
+  "Abrufdatum: 2026-04-08.\n\n"
+
+  "Einzellizenzen der verwendeten Dateien:\n"
+  "• Klasse 1: Datei:Dangclass1.svg — Lizenz: CC BY-SA 3.0 + GFDL 1.2+ — Quelle: https://commons.wikimedia.org/wiki/File:Dangclass1.svg\n"
+  "• Klasse 2.1: Datei:DOT_hazmat_class_2.1.svg — Lizenz: Public Domain (US Gov) + CC0 — Quelle: https://commons.wikimedia.org/wiki/File:DOT_hazmat_class_2.1.svg\n"
+  "• Klasse 2.2: Datei:DOT_hazmat_class_2.2.svg — Lizenz: Public Domain (US Gov) + CC0 — Quelle: https://commons.wikimedia.org/wiki/File:DOT_hazmat_class_2.2.svg\n"
+  "• Klasse 2.3: Datei:DOT_hazmat_class_2.3_-_(Alt_2).svg — Lizenz: Public Domain (US Gov) — Quelle: https://commons.wikimedia.org/wiki/File:DOT_hazmat_class_2.3_-_(Alt_2).svg\n"
+  "• Klasse 3: Datei:Label_for_dangerous_goods_-_class_3.svg — Lizenz: Public Domain — Quelle: https://commons.wikimedia.org/wiki/File:Label_for_dangerous_goods_-_class_3.svg\n"
+  "• Klasse 4.1: Datei:DOT_hazmat_class_4.1.svg — Lizenz: Public Domain (US Gov) + CC0 — Quelle: https://commons.wikimedia.org/wiki/File:DOT_hazmat_class_4.1.svg\n"
+  "• Klasse 4.2: Datei:DOT_hazmat_class_4.2.svg — Lizenz: Public Domain (US Gov) + CC0 — Quelle: https://commons.wikimedia.org/wiki/File:DOT_hazmat_class_4.2.svg\n"
+  "• Klasse 4.3: Datei:Label_for_dangerous_goods_-_class_4.3.svg — Lizenz: Public Domain — Quelle: https://commons.wikimedia.org/wiki/File:Label_for_dangerous_goods_-_class_4.3.svg\n"
+  "• Klasse 5.1: Datei:UN_transport_pictogram_-_5.1.svg — Lizenz: Public Domain — Quelle: https://commons.wikimedia.org/wiki/File:UN_transport_pictogram_-_5.1.svg\n"
+  "• Klasse 5.2: Datei:Placard_5.2.svg — Lizenz: CC BY-SA (1.0/2.0/2.5/3.0) + GFDL 1.2+ — Quelle: https://commons.wikimedia.org/wiki/File:Placard_5.2.svg\n"
+  "• Klasse 6.1: Datei:Dangclass6_1.svg — Lizenz: CC BY-SA 3.0 + GFDL 1.2+ — Quelle: https://commons.wikimedia.org/wiki/File:Dangclass6_1.svg\n"
+  "• Klasse 7: Datei:ADR_7B.svg — Lizenz: Public Domain (ineligible) — Quelle: https://commons.wikimedia.org/wiki/File:ADR_7B.svg\n"
+  "• Klasse 8: Datei:Danger-class-8.svg — Lizenz: CC BY-SA 3.0 + GFDL 1.2+ — Quelle: https://commons.wikimedia.org/wiki/File:Danger-class-8.svg\n"
+  "• Klasse 9: Datei:Dangclass9A.svg — Lizenz: Public Domain — Quelle: https://commons.wikimedia.org/wiki/File:Dangclass9A.svg\n\n"
+
+  "Lizenzlinks:\n"
+  "• CC BY-SA 3.0: https://creativecommons.org/licenses/by-sa/3.0/\n"
+  "• CC0 1.0: https://creativecommons.org/publicdomain/zero/1.0/\n"
+  "• GFDL 1.2: https://www.gnu.org/licenses/old-licenses/fdl-1.2.html\n";
+
 void main() => runApp(const MyApp());
 
 enum AppThemeMode { system, light, dark }
@@ -116,16 +148,32 @@ class _HomeScreenState extends State<HomeScreen> {
   static const _prefSearchProvider = 'setting_search_provider';
   static const _prefConfirmDeleteAll = 'setting_confirm_delete_all';
 
-  static const String _appVersion = "v1.2.0";
+  // First-run disclaimer
+  static const _prefDisclaimerAccepted = 'disclaimer_accepted_v1';
+
+  static const String _appVersion = "v1.2.1";
   static const String _repoUrl = "https://github.com/Inqsane/UN-Nummern-Sammler";
-  static const String _releasesUrl = "https://github.com/Inqsane/UN-Nummern-Sammler/releases";
+  static const String _releasesUrl =
+      "https://github.com/Inqsane/UN-Nummern-Sammler/releases";
   static const String _discordId = "Inqsane";
+
+  // Play Store (manuell gepflegte Version über JSON im Repo)
+  static const String _playStoreUrl =
+      "https://play.google.com/store/apps/details?id=com.inqsane.un_sammler";
+
+  static const String _playStoreVersionJsonUrl =
+    "https://raw.githubusercontent.com/Inqsane/UN-Nummern-Sammler/main/google_play_ver.json";
 
   String? latestReleaseTag;
   String? latestReleaseUrl;
   DateTime? latestReleasePublishedAt;
   bool latestReleaseLoading = false;
   String? latestReleaseError;
+
+  String? playStoreLatestVersion;
+  String? playStoreLatestUpdatedAt;
+  bool playStoreLatestLoading = false;
+  String? playStoreLatestError;
 
   static const double _symbolSize = 140;
 
@@ -138,6 +186,12 @@ class _HomeScreenState extends State<HomeScreen> {
     unController.addListener(updateUN);
 
     Future.microtask(fetchLatestRelease);
+    Future.microtask(fetchPlayStoreLatestVersion);
+
+    // show disclaimer once (after first frame)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _maybeShowDisclaimer();
+    });
   }
 
   @override
@@ -145,6 +199,38 @@ class _HomeScreenState extends State<HomeScreen> {
     unController.removeListener(updateUN);
     unController.dispose();
     super.dispose();
+  }
+
+  Future<void> _maybeShowDisclaimer() async {
+    final prefs = await SharedPreferences.getInstance();
+    final accepted = prefs.getBool(_prefDisclaimerAccepted) ?? false;
+    if (accepted) return;
+
+    if (!mounted) return;
+
+    await showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Wichtiger Hinweis'),
+        content: const SingleChildScrollView(
+          child: Text(
+            'Alle Informationen in dieser App sind ohne Gewähr und können falsch oder unvollständig sein.\n\n'
+            'Nutze diese App NICHT für sicherheitskritische Zwecke.\n\n'
+            'Wenn du Fehler findest, melde sie bitte dem Developer (z.B. über GitHub / Discord).',
+          ),
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () async {
+              await prefs.setBool(_prefDisclaimerAccepted, true);
+              if (ctx.mounted) Navigator.pop(ctx);
+            },
+            child: const Text('Verstanden'),
+          ),
+        ],
+      ),
+    );
   }
 
   // DB laden
@@ -255,10 +341,13 @@ class _HomeScreenState extends State<HomeScreen> {
         "https://api.github.com/repos/Inqsane/UN-Nummern-Sammler/releases/latest",
       );
 
-      final res = await http.get(uri, headers: {
-        "Accept": "application/vnd.github+json",
-        "User-Agent": "UN-Sammler-App",
-      });
+      final res = await http.get(
+        uri,
+        headers: {
+          "Accept": "application/vnd.github+json",
+          "User-Agent": "UN-Sammler-App",
+        },
+      );
 
       if (res.statusCode != 200) {
         throw Exception("HTTP ${res.statusCode}");
@@ -272,8 +361,9 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         latestReleaseTag = tag.isEmpty ? null : tag;
         latestReleaseUrl = htmlUrl.isEmpty ? null : htmlUrl;
-        latestReleasePublishedAt =
-            publishedAtStr.isEmpty ? null : DateTime.tryParse(publishedAtStr);
+        latestReleasePublishedAt = publishedAtStr.isEmpty
+            ? null
+            : DateTime.tryParse(publishedAtStr);
       });
     } catch (e) {
       setState(() {
@@ -287,11 +377,63 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  bool get updateVerfuegbar {
-    final latest = latestReleaseTag;
-    if (latest == null || latest.trim().isEmpty) return false;
-    return latest.trim() != _appVersion.trim();
+  Future<void> fetchPlayStoreLatestVersion() async {
+    if (playStoreLatestLoading) return;
+
+    setState(() {
+      playStoreLatestLoading = true;
+      playStoreLatestError = null;
+    });
+
+    try {
+      final uri = Uri.parse(_playStoreVersionJsonUrl).replace(
+        queryParameters: {
+          "ts": DateTime.now().millisecondsSinceEpoch.toString(),
+        },
+      );
+
+      final res = await http.get(
+        uri,
+        headers: {"Accept": "application/json", "User-Agent": "UN-Sammler-App"},
+      );
+
+      if (res.statusCode != 200) {
+        throw Exception("HTTP ${res.statusCode}");
+      }
+
+      final decoded = json.decode(res.body);
+      if (decoded is! Map<String, dynamic>) {
+        throw Exception("Ungültiges JSON (kein Objekt)");
+      }
+
+      final v = (decoded["version"] ?? "").toString().trim();
+      if (v.isEmpty) {
+        throw Exception("Feld 'version' fehlt/leer");
+      }
+
+      final updatedAt = (decoded["updated_at"] ?? "").toString().trim();
+
+      setState(() {
+        playStoreLatestVersion = v;
+        playStoreLatestUpdatedAt = updatedAt.isEmpty ? null : updatedAt;
+      });
+    } catch (e) {
+      setState(() {
+        playStoreLatestError =
+            "Konnte Play-Store-Version nicht laden (${e.toString()})";
+      });
+    } finally {
+      setState(() {
+        playStoreLatestLoading = false;
+      });
+    }
   }
+
+  bool get updateVerfuegbar {
+    final latest = playStoreLatestVersion?.trim();
+    if (latest == null || latest.isEmpty) return false;
+    return latest != _appVersion.trim();
+}
 
   Uri _buildSearchUrl(String query) {
     final q = query.trim();
@@ -366,125 +508,125 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void zeigeListe() {
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    showDragHandle: true,
-    builder: (context) {
-      return StatefulBuilder(
-        builder: (context, setModalState) {
-          final items = gespeicherteUNs.keys.toList()
-            ..sort((a, b) => a.compareTo(b));
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final items = gespeicherteUNs.keys.toList()
+              ..sort((a, b) => a.compareTo(b));
 
-          return SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    children: [
-                      const Icon(Icons.bookmark, size: 20),
-                      const SizedBox(width: 8),
-                      Text(
-                        "Gespeicherte UNs (${items.length})",
-                        style: Theme.of(context).textTheme.titleMedium,
-                      ),
-                      const Spacer(),
-                      TextButton.icon(
-                        onPressed: items.isEmpty
-                            ? null
-                            : () async {
-                                final ok = await _confirmDeleteAll();
-                                if (!ok) return;
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.bookmark, size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          "Gespeicherte UNs (${items.length})",
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                        const Spacer(),
+                        TextButton.icon(
+                          onPressed: items.isEmpty
+                              ? null
+                              : () async {
+                                  final ok = await _confirmDeleteAll();
+                                  if (!ok) return;
 
-                                final prefs =
-                                    await SharedPreferences.getInstance();
-                                for (final k in gespeicherteUNs.keys) {
-                                  await prefs.remove(k);
-                                }
+                                  final prefs =
+                                      await SharedPreferences.getInstance();
+                                  for (final k in gespeicherteUNs.keys) {
+                                    await prefs.remove(k);
+                                  }
 
-                                setState(() => gespeicherteUNs.clear());
-                                setModalState(() {});
+                                  setState(() => gespeicherteUNs.clear());
+                                  setModalState(() {});
 
-                                if (context.mounted) Navigator.pop(context);
-                              },
-                        icon: const Icon(Icons.delete_outline),
-                        label: const Text("Alle löschen"),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  if (items.isEmpty)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 24),
-                      child: Text(
-                        "Noch keine UNs gespeichert.",
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                    )
-                  else
-                    Flexible(
-                      child: ListView.separated(
-                        shrinkWrap: true,
-                        itemCount: items.length,
-                        separatorBuilder: (_, __) => const Divider(height: 1),
-                        itemBuilder: (context, index) {
-                          final un = items[index];
-                          final datum = gespeicherteUNs[un] ?? "";
-                          final name = datenbank[un]?["name"] ?? "-";
-                          final klasse = datenbank[un]?["klasse"];
-
-                          return ListTile(
-                            contentPadding: EdgeInsets.zero,
-                            leading: CircleAvatar(
-                              child: Text(
-                                un.length <= 3 ? un : un.substring(0, 3),
-                              ),
-                            ),
-                            title: Text("UN $un: $name"),
-                            subtitle: Text(
-                              "Gespeichert am: ${datum.isEmpty ? "—" : datum}"
-                              "${(klasse != null && klasse.isNotEmpty) ? " • Klasse: $klasse" : ""}",
-                            ),
-                            trailing: Wrap(
-                              spacing: 6,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.search),
-                                  onPressed: () => searchOnline(name),
-                                  tooltip: "Online suchen",
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete_outline),
-                                  tooltip: "Entfernen",
-                                  onPressed: () async {
-                                    await entfernen(un);
-                                    setModalState(() {});
-                                  },
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
+                                  if (context.mounted) Navigator.pop(context);
+                                },
+                          icon: const Icon(Icons.delete_outline),
+                          label: const Text("Alle löschen"),
+                        ),
+                      ],
                     ),
-                ],
+                    const SizedBox(height: 8),
+                    if (items.isEmpty)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 24),
+                        child: Text(
+                          "Noch keine UNs gespeichert.",
+                          style: Theme.of(context).textTheme.bodyMedium,
+                        ),
+                      )
+                    else
+                      Flexible(
+                        child: ListView.separated(
+                          shrinkWrap: true,
+                          itemCount: items.length,
+                          separatorBuilder: (_, __) => const Divider(height: 1),
+                          itemBuilder: (context, index) {
+                            final un = items[index];
+                            final datum = gespeicherteUNs[un] ?? "";
+                            final name = datenbank[un]?["name"] ?? "-";
+                            final klasse = datenbank[un]?["klasse"];
+
+                            return ListTile(
+                              contentPadding: EdgeInsets.zero,
+                              leading: CircleAvatar(
+                                child: Text(
+                                  un.length <= 3 ? un : un.substring(0, 3),
+                                ),
+                              ),
+                              title: Text("UN $un: $name"),
+                              subtitle: Text(
+                                "Gespeichert am: ${datum.isEmpty ? "—" : datum}"
+                                "${(klasse != null && klasse.isNotEmpty) ? " • Klasse: $klasse" : ""}",
+                              ),
+                              trailing: Wrap(
+                                spacing: 6,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.search),
+                                    onPressed: () => searchOnline(name),
+                                    tooltip: "Online suchen",
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete_outline),
+                                    tooltip: "Entfernen",
+                                    onPressed: () async {
+                                      await entfernen(un);
+                                      setModalState(() {});
+                                    },
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                  ],
+                ),
               ),
-            ),
-          );
-        },
-      );
-    },
-  );
-}
+            );
+          },
+        );
+      },
+    );
+  }
 
   Map<String, dynamic> _buildBackupJson() {
     return {
       "schema": 1,
       "exported_at": DateTime.now().toUtc().toIso8601String(),
       "app_version": _appVersion,
-      "saved_uns": gespeicherteUNs, 
+      "saved_uns": gespeicherteUNs,
     };
   }
 
@@ -543,7 +685,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final prefs = await SharedPreferences.getInstance();
 
-    for (final k in gespeicherteUNs.keys) {
+    // remove all UN keys (not just those currently in memory)
+    final keys = prefs.getKeys();
+    final unKeys = keys.where((k) => RegExp(r'^\d{1,4}$').hasMatch(k));
+    for (final k in unKeys) {
       await prefs.remove(k);
     }
 
@@ -557,7 +702,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _goTo(Widget page) async {
-    Navigator.pop(context); 
+    Navigator.pop(context);
     await Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => page),
@@ -617,14 +762,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   appVersion: _appVersion,
                   repoUrl: _repoUrl,
                   releasesUrl: _releasesUrl,
+                  playStoreLatestUpdatedAt: playStoreLatestUpdatedAt,
                   discordId: _discordId,
                   latestReleaseLoading: latestReleaseLoading,
                   latestReleaseTag: latestReleaseTag,
                   latestReleaseUrl: latestReleaseUrl,
                   latestReleasePublishedAt: latestReleasePublishedAt,
                   latestReleaseError: latestReleaseError,
+                  playStoreUrl: _playStoreUrl,
+                  playStoreLatestLoading: playStoreLatestLoading,
+                  playStoreLatestVersion: playStoreLatestVersion,
+                  playStoreLatestError: playStoreLatestError,
                   updateAvailable: updateVerfuegbar,
                   onRefreshLatestRelease: fetchLatestRelease,
+                  onRefreshPlayStoreLatestVersion: fetchPlayStoreLatestVersion,
                 ),
               ),
             ),
@@ -716,7 +867,7 @@ class _HomeScreenState extends State<HomeScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            if (updateVerfuegbar)
+            if (!playStoreLatestLoading && updateVerfuegbar)
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(12),
@@ -735,8 +886,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     TextButton(
-                      onPressed: () => _openExternal(_releasesUrl),
-                      child: const Text("Releases"),
+                      onPressed: () => _openExternal(_playStoreUrl),
+                      child: const Text("Play Store"),
                     ),
                   ],
                 ),
@@ -763,9 +914,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     Expanded(
                       child: Text(
                         "Gespeicherte UNs",
-                        style: Theme.of(
-                          context,
-                        ).textTheme.titleMedium?.copyWith(color: Colors.white),
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(color: Colors.white),
                       ),
                     ),
                     Container(
@@ -910,15 +1062,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       ? "Hinweis: UN-Nummern müssen 4-stellig sein (z.B. 0001, statt 1)."
                       : "Keine UN gefunden.",
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: (eingabe.length < 4)
-                        ? Theme.of(context).colorScheme.onSurfaceVariant
-                        : Theme.of(context).colorScheme.error,
-                  ),
+                        color: (eingabe.length < 4)
+                            ? Theme.of(context).colorScheme.onSurfaceVariant
+                            : Theme.of(context).colorScheme.error,
+                      ),
                 ),
               ),
             const Spacer(),
             Text(
-              "Die aktuelle Version ist NUR in Englisch verfügbar, da die UN-Datenbank auf Englisch ist. Eine deutsche Version könnte in Zukunft folgen.",
+              "Alle Informationen ohne Gewähr. Nicht für sicherheitskritische Zwecke verwenden.",
               style: Theme.of(context).textTheme.bodySmall,
               textAlign: TextAlign.center,
             ),
@@ -941,8 +1093,14 @@ class InfoPage extends StatelessWidget {
     required this.latestReleaseUrl,
     required this.latestReleasePublishedAt,
     required this.latestReleaseError,
+    required this.playStoreUrl,
+    required this.playStoreLatestLoading,
+    required this.playStoreLatestVersion,
+    required this.playStoreLatestError,
+    required this.playStoreLatestUpdatedAt,
     required this.updateAvailable,
     required this.onRefreshLatestRelease,
+    required this.onRefreshPlayStoreLatestVersion,
   });
 
   final String appVersion;
@@ -956,8 +1114,15 @@ class InfoPage extends StatelessWidget {
   final DateTime? latestReleasePublishedAt;
   final String? latestReleaseError;
 
+  final String playStoreUrl;
+  final bool playStoreLatestLoading;
+  final String? playStoreLatestVersion;
+  final String? playStoreLatestError;
+  final String? playStoreLatestUpdatedAt;
+
   final bool updateAvailable;
   final Future<void> Function() onRefreshLatestRelease;
+  final Future<void> Function() onRefreshPlayStoreLatestVersion;
 
   String _formatIsoDate(DateTime dt) {
     final y = dt.year.toString().padLeft(4, '0');
@@ -972,107 +1137,155 @@ class InfoPage extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final latestText = latestReleaseLoading
-        ? "Lade…"
-        : (latestReleaseTag ?? (latestReleaseError ?? "—"));
+Widget build(BuildContext context) {
+  final latestText = latestReleaseLoading
+      ? "Lade…"
+      : (latestReleaseTag ?? (latestReleaseError ?? "—"));
 
-    return Scaffold(
-      appBar: AppBar(title: const Text("Info")),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          if (updateAvailable)
-            Card(
-              elevation: 0,
-              color: Theme.of(context).colorScheme.tertiaryContainer,
-              child: Padding(
-                padding: const EdgeInsets.all(14),
-                child: Row(
-                  children: [
-                    const Icon(Icons.new_releases),
-                    const SizedBox(width: 10),
-                    const Expanded(
-                      child: Text(
-                        "Update verfügbar! Öffne die Releases-Seite, um die neuste Version herunterzuladen.",
-                      ),
+  final playText = playStoreLatestLoading
+      ? "Lade…"
+      : (playStoreLatestVersion ?? (playStoreLatestError ?? "—"));
+
+  return Scaffold(
+    appBar: AppBar(title: const Text("Info")),
+    body: ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        if (updateAvailable)
+          Card(
+            elevation: 0,
+            color: Theme.of(context).colorScheme.tertiaryContainer,
+            child: Padding(
+              padding: const EdgeInsets.all(14),
+              child: Row(
+                children: [
+                  const Icon(Icons.new_releases),
+                  const SizedBox(width: 10),
+                  const Expanded(
+                    child: Text(
+                      "Update verfügbar! Öffne den Play Store, um die neuste Version herunterzuladen. Ein Backup zu machen wird empfohlen.",
                     ),
-                    TextButton(
-                      onPressed: () => _openExternal(context, releasesUrl),
-                      child: const Text("Releases"),
-                    ),
-                  ],
-                ),
+                  ),
+                  TextButton(
+                    onPressed: () => _openExternal(context, playStoreUrl),
+                      child: const Text("Play Store"),
+                  ),
+                ],
               ),
             ),
-          const SizedBox(height: 12),
-          Text(
-            "UN Sammler",
-            style: Theme.of(context).textTheme.titleLarge,
           ),
-          const SizedBox(height: 6),
-          Text("Aktuelle Version: $appVersion"),
-          const SizedBox(height: 16),
-          const Divider(),
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.system_update_alt),
-            title: const Text("Neuste Version (GitHub)"),
-            subtitle: Text(latestText),
-            onTap: () => _openExternal(context, latestReleaseUrl ?? releasesUrl),
-            trailing: IconButton(
-              icon: const Icon(Icons.refresh),
-              tooltip: "Aktualisieren",
-              onPressed: latestReleaseLoading ? null : onRefreshLatestRelease,
+        const SizedBox(height: 12),
+        Text(
+          "UN Sammler",
+          style: Theme.of(context).textTheme.titleLarge,
+        ),
+        const SizedBox(height: 6),
+        Text("Aktuelle Version: $appVersion"),
+        const SizedBox(height: 16),
+        const Divider(),
+
+        // --- GitHub ---
+        ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: const Icon(Icons.system_update_alt),
+          title: const Text("Neuste Version (GitHub)"),
+          subtitle: Text(latestText),
+          onTap: () => _openExternal(context, latestReleaseUrl ?? releasesUrl),
+          trailing: IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: "Aktualisieren",
+            onPressed: latestReleaseLoading ? null : onRefreshLatestRelease,
+          ),
+        ),
+        if (latestReleasePublishedAt != null)
+          Padding(
+            padding: const EdgeInsets.only(left: 56, bottom: 8),
+            child: Text(
+              "Veröffentlicht am: ${_formatIsoDate(latestReleasePublishedAt!.toLocal())}",
+              style: Theme.of(context).textTheme.bodySmall,
             ),
           ),
-          if (latestReleasePublishedAt != null)
-            Padding(
-              padding: const EdgeInsets.only(left: 56, bottom: 8),
-              child: Text(
-                "Veröffentlicht am: ${_formatIsoDate(latestReleasePublishedAt!.toLocal())}",
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
+
+        // --- Play-JSON (google_play_ver.json) ---
+        ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: const Icon(Icons.shop_outlined),
+          title: const Text("Neuste Version (Play Store)"),
+          subtitle: Text(playText),
+          onTap: () => _openExternal(context, playStoreUrl),
+          trailing: IconButton(
+            icon: const Icon(Icons.refresh),
+            tooltip: "Aktualisieren",
+            onPressed:
+                playStoreLatestLoading ? null : onRefreshPlayStoreLatestVersion,
+          ),
+        ),
+        if (playStoreLatestUpdatedAt != null &&
+            playStoreLatestUpdatedAt!.trim().isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(left: 56, bottom: 8),
+            child: Text(
+              "Aktualisiert am: ${playStoreLatestUpdatedAt!}",
+              style: Theme.of(context).textTheme.bodySmall,
             ),
-          const Divider(),
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.code),
-            title: const Text("GitHub Repo"),
-            subtitle: Text(repoUrl),
-            onTap: () => _openExternal(context, repoUrl),
           ),
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.open_in_new),
-            title: const Text("Releases"),
-            subtitle: Text(releasesUrl),
-            onTap: () => _openExternal(context, releasesUrl),
+
+        const Divider(),
+        ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: const Icon(Icons.code),
+          title: const Text("GitHub Repo"),
+          subtitle: Text(repoUrl),
+          onTap: () => _openExternal(context, repoUrl),
+        ),
+        ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: const Icon(Icons.open_in_new),
+          title: const Text("Releases"),
+          subtitle: Text(releasesUrl),
+          onTap: () => _openExternal(context, releasesUrl),
+        ),
+        const Divider(),
+        ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: const Icon(Icons.chat_bubble_outline),
+          title: const Text("Discord ID"),
+          subtitle: Text(discordId),
+        ),
+        const Divider(),
+        const SizedBox(height: 8),
+        Text(
+          "Hinweise",
+          style: Theme.of(context).textTheme.titleMedium,
+        ),
+        const SizedBox(height: 6),
+        const Text(
+          "• UN-/Gefahrgutdaten sind auf Englisch (Quelle/DB: Englisch).\n"
+          "• Gespeicherte UNs werden lokal auf deinem Gerät gespeichert (SharedPreferences).\n"
+          "• Online-Suche öffnet den Browser/externen Anbieter (Google/DuckDuckGo/Wikipedia).",
+        ),
+        const SizedBox(height: 12),
+        Card(
+          elevation: 0,
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          child: ListTile(
+            leading: const Icon(Icons.article_outlined),
+            title: const Text("Lizenzen / Quellen"),
+            subtitle: const Text("Daten-/Bildquellen & Open-Source Lizenzen"),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const LicensesSourcesPage()),
+              );
+            },
           ),
-          const Divider(),
-          ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: const Icon(Icons.chat_bubble_outline),
-            title: const Text("Discord ID"),
-            subtitle: Text(discordId),
-          ),
-          const Divider(),
-          const SizedBox(height: 8),
-          Text(
-            "Hinweise",
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 6),
-          Text(
-            "• UN-/Gefahrgutdaten sind auf Englisch (Quelle/DB: Englisch).\n"
-            "• Gespeicherte UNs werden lokal auf deinem Gerät gespeichert (SharedPreferences).\n"
-            "• Online-Suche öffnet den Browser/externen Anbieter (Google/DuckDuckGo/Wikipedia).",
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
+
 }
 
 class LexikonPage extends StatefulWidget {
@@ -1241,7 +1454,9 @@ class _LexikonPageState extends State<LexikonPage> {
                         symbolAssetPath: sym.isEmpty ? null : sym,
                         isSaved: saved,
                         savedAt: widget.gespeicherteUNs[un],
-                        adrInfo: (klasse == null) ? null : widget.adrInfoByClass[klasse],
+                        adrInfo: (klasse == null)
+                            ? null
+                            : widget.adrInfoByClass[klasse],
                         onToggleSave: () async {
                           await widget.onToggleSave(un);
                           if (!mounted) return;
@@ -1354,7 +1569,8 @@ class LexikonDetailPage extends StatelessWidget {
                             errorBuilder: (_, __, ___) => const SizedBox(
                               width: 160,
                               height: 160,
-                              child: Center(child: Text("Symbol nicht gefunden")),
+                              child:
+                                  Center(child: Text("Symbol nicht gefunden")),
                             ),
                           ),
                         ),
@@ -1515,7 +1731,7 @@ class StatistikPage extends StatelessWidget {
   }
 }
 
-class SettingsPage extends StatelessWidget {
+class SettingsPage extends StatefulWidget {
   const SettingsPage({
     super.key,
     required this.themeMode,
@@ -1536,19 +1752,48 @@ class SettingsPage extends StatelessWidget {
   final ValueChanged<bool> onConfirmDeleteAllChanged;
 
   @override
+  State<SettingsPage> createState() => _SettingsPageState();
+}
+
+class _SettingsPageState extends State<SettingsPage> {
+  late AppThemeMode _themeMode;
+  late SearchProvider _searchProvider;
+  late bool _confirmDeleteAll;
+
+  @override
+  void initState() {
+    super.initState();
+    _themeMode = widget.themeMode;
+    _searchProvider = widget.searchProvider;
+    _confirmDeleteAll = widget.confirmDeleteAll;
+  }
+
+  @override
+  void didUpdateWidget(covariant SettingsPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.themeMode != widget.themeMode) _themeMode = widget.themeMode;
+    if (oldWidget.searchProvider != widget.searchProvider) {
+      _searchProvider = widget.searchProvider;
+    }
+    if (oldWidget.confirmDeleteAll != widget.confirmDeleteAll) {
+      _confirmDeleteAll = widget.confirmDeleteAll;
+    }
+  }
+
+  String themeLabel(AppThemeMode m) => switch (m) {
+        AppThemeMode.system => "System",
+        AppThemeMode.light => "Hell",
+        AppThemeMode.dark => "Dunkel",
+      };
+
+  String providerLabel(SearchProvider p) => switch (p) {
+        SearchProvider.google => "Google",
+        SearchProvider.duckduckgo => "DuckDuckGo",
+        SearchProvider.wikipedia => "Wikipedia",
+      };
+
+  @override
   Widget build(BuildContext context) {
-    String themeLabel(AppThemeMode m) => switch (m) {
-          AppThemeMode.system => "System",
-          AppThemeMode.light => "Hell",
-          AppThemeMode.dark => "Dunkel",
-        };
-
-    String providerLabel(SearchProvider p) => switch (p) {
-          SearchProvider.google => "Google",
-          SearchProvider.duckduckgo => "DuckDuckGo",
-          SearchProvider.wikipedia => "Wikipedia",
-        };
-
     return Scaffold(
       appBar: AppBar(title: const Text("Einstellungen")),
       body: ListView(
@@ -1561,7 +1806,7 @@ class SettingsPage extends StatelessWidget {
               children: [
                 ListTile(
                   title: const Text("Design"),
-                  subtitle: Text(themeLabel(themeMode)),
+                  subtitle: Text(themeLabel(_themeMode)),
                 ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
@@ -1570,20 +1815,32 @@ class SettingsPage extends StatelessWidget {
                       RadioListTile<AppThemeMode>(
                         title: const Text("System"),
                         value: AppThemeMode.system,
-                        groupValue: themeMode,
-                        onChanged: (v) => onThemeModeChanged(v!),
+                        groupValue: _themeMode,
+                        onChanged: (v) {
+                          if (v == null) return;
+                          setState(() => _themeMode = v);
+                          widget.onThemeModeChanged(v);
+                        },
                       ),
                       RadioListTile<AppThemeMode>(
                         title: const Text("Hell"),
                         value: AppThemeMode.light,
-                        groupValue: themeMode,
-                        onChanged: (v) => onThemeModeChanged(v!),
+                        groupValue: _themeMode,
+                        onChanged: (v) {
+                          if (v == null) return;
+                          setState(() => _themeMode = v);
+                          widget.onThemeModeChanged(v);
+                        },
                       ),
                       RadioListTile<AppThemeMode>(
                         title: const Text("Dunkel"),
                         value: AppThemeMode.dark,
-                        groupValue: themeMode,
-                        onChanged: (v) => onThemeModeChanged(v!),
+                        groupValue: _themeMode,
+                        onChanged: (v) {
+                          if (v == null) return;
+                          setState(() => _themeMode = v);
+                          widget.onThemeModeChanged(v);
+                        },
                       ),
                     ],
                   ),
@@ -1599,7 +1856,7 @@ class SettingsPage extends StatelessWidget {
               children: [
                 ListTile(
                   title: const Text("Online-Suche"),
-                  subtitle: Text(providerLabel(searchProvider)),
+                  subtitle: Text(providerLabel(_searchProvider)),
                 ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
@@ -1608,20 +1865,32 @@ class SettingsPage extends StatelessWidget {
                       RadioListTile<SearchProvider>(
                         title: const Text("Google"),
                         value: SearchProvider.google,
-                        groupValue: searchProvider,
-                        onChanged: (v) => onSearchProviderChanged(v!),
+                        groupValue: _searchProvider,
+                        onChanged: (v) {
+                          if (v == null) return;
+                          setState(() => _searchProvider = v);
+                          widget.onSearchProviderChanged(v);
+                        },
                       ),
                       RadioListTile<SearchProvider>(
                         title: const Text("DuckDuckGo"),
                         value: SearchProvider.duckduckgo,
-                        groupValue: searchProvider,
-                        onChanged: (v) => onSearchProviderChanged(v!),
+                        groupValue: _searchProvider,
+                        onChanged: (v) {
+                          if (v == null) return;
+                          setState(() => _searchProvider = v);
+                          widget.onSearchProviderChanged(v);
+                        },
                       ),
                       RadioListTile<SearchProvider>(
                         title: const Text("Wikipedia"),
                         value: SearchProvider.wikipedia,
-                        groupValue: searchProvider,
-                        onChanged: (v) => onSearchProviderChanged(v!),
+                        groupValue: _searchProvider,
+                        onChanged: (v) {
+                          if (v == null) return;
+                          setState(() => _searchProvider = v);
+                          widget.onSearchProviderChanged(v);
+                        },
                       ),
                     ],
                   ),
@@ -1635,8 +1904,28 @@ class SettingsPage extends StatelessWidget {
             color: Theme.of(context).colorScheme.surfaceContainerHighest,
             child: SwitchListTile(
               title: const Text("Bestätigung beim „Alle löschen“"),
-              value: confirmDeleteAll,
-              onChanged: onConfirmDeleteAllChanged,
+              value: _confirmDeleteAll,
+              onChanged: (v) {
+                setState(() => _confirmDeleteAll = v);
+                widget.onConfirmDeleteAllChanged(v);
+              },
+            ),
+          ),
+          const SizedBox(height: 12),
+          Card(
+            elevation: 0,
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            child: ListTile(
+              leading: const Icon(Icons.article_outlined),
+              title: const Text("Lizenzen / Quellen"),
+              subtitle: const Text("Bild-/Datenquellen & Open-Source Lizenzen"),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LicensesSourcesPage()),
+                );
+              },
             ),
           ),
         ],
@@ -1900,3 +2189,101 @@ const Map<String, AdrInfo> adrInfoByClass = {
     examples: ["Lithium-Ionen-Batterien (Beispiel)"],
   ),
 };
+
+class LicensesSourcesPage extends StatelessWidget {
+  const LicensesSourcesPage({super.key});
+
+  Future<void> _openExternal(BuildContext context, String url) async {
+    final uri = Uri.parse(url);
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    const symbolsSource = "https://de.wikipedia.org/wiki/Gefahrgutklasse";
+    const unListSource = "https://en.wikipedia.org/wiki/Lists_of_UN_numbers";
+    const ccBySa = "https://creativecommons.org/licenses/by-sa/4.0/";
+
+    return Scaffold(
+      appBar: AppBar(title: const Text("Lizenzen / Quellen")),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Text(
+            "Attribution",
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          Card(
+            elevation: 0,
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            child: const Padding(
+                padding: EdgeInsets.all(16),
+                child: Text(licensesAttributionText),
+              ),
+            ),
+          const SizedBox(height: 16),
+          Text(
+            "Quellen",
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          Card(
+            elevation: 0,
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            child: Column(
+              children: [
+                ListTile(
+                  leading: const Icon(Icons.list_alt_outlined),
+                  title: const Text("Liste der UN-Nummern"),
+                  subtitle: const Text(unListSource),
+                  onTap: () => _openExternal(context, unListSource),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.image_outlined),
+                  title: const Text("Bilder / Symbole (Gefahrgutklassen)"),
+                  subtitle: const Text(symbolsSource),
+                  onTap: () => _openExternal(context, symbolsSource),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.gavel_outlined),
+                  title: const Text("Lizenzen (Übersicht)"),
+                  subtitle: const Text(
+                    "CC BY-SA / CC0 / Public Domain / GFDL (siehe oben)",
+                  ),
+                  onTap: () => _openExternal(
+                    context,
+                    "https://commons.wikimedia.org/wiki/Commons:Licensing",
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            "Open‑Source Lizenzen",
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
+          const SizedBox(height: 8),
+          Card(
+            elevation: 0,
+            color: Theme.of(context).colorScheme.surfaceContainerHighest,
+            child: ListTile(
+              leading: const Icon(Icons.code),
+              title: const Text("Flutter / Package Lizenzen anzeigen"),
+              subtitle: const Text("Automatisch generierte Lizenzliste"),
+              onTap: () {
+                showLicensePage(
+                  context: context,
+                  applicationName: "UN Sammler",
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
