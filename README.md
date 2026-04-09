@@ -5,6 +5,11 @@ Die Idee hatte ich auf einer Autofahrt während ich mit dem Kennzeichensammler K
 
 Wenn ihr Feedback oder Bugs findet: DM **inqsane** auf discord.
 
+## Google Play
+
+Die App ist nun für die ersten Test Builde auf Google Play verfügbar, wenn ihr ins Tester Programm aufgenommen werden wollt, schreibt eine Email an "inqsanedc@gmail.com" oder "inqsane" auf discord, bitte beachtet das ihr eure Google Play E-Mail mitschicken müsst.
+https://play.google.com/apps/internaltest/4701309347417518016
+
 ## Hinweis zu Bug Reporting / Feedback:
 - Bitte Datenbankenfehler sofort melden, z.b. wenn eine Klasse falsch eingetragen ist.
 - Bitte Übersetzungsfehler (Ja ich arbeite an einer deutschen Übersetzung) sofort melden.
@@ -72,4 +77,11 @@ Links nach rechts: Frontend-Dev, Frontend-Dev, UI Designer, Developer, Manager/D
 Danke an alle aus dem Team die bei diesem Projekt mithelfen.
 
 ## Lizenz
-Aktuell keine spezielle Lizenz angegeben. Sollte etwas am Projekt verändert werden bitte das inqsane per discord mitteilen. Danke
+Für dieses Projekt ist derzeit keine spezifische Open-Source-Lizenz festgelegt.
+Alle Rechte liegen beim Entwickler.
+
+Da die App nun im Google Play Store veröffentlicht ist, ist die Nutzung, Vervielfältigung oder Veränderung des Codes ohne ausdrückliche Genehmigung nicht gestattet.
+
+Bei Fragen, Feedback oder Interesse an Änderungen/Weiterentwicklungen kontaktiere bitte den Entwickler (inqsane) über Discord.
+
+Vielen Dank für dein Verständnis.
