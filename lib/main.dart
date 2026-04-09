@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -9,11 +10,11 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 const String licensesAttributionText = 
-  "UN-Nummern (Daten): basieren auf Wikipedia („Lists of UN numbers“). "
+  "UN-Nummern (Daten):  siehe offizielle UN/ECE-Quellen. https://unece.org/transport/dangerous-goods/adr \n\n"
   "Lizenz: CC BY-SA (Wikipedia). Inhalte können formatiert/gekürzt worden sein.\n\n"
 
   "Gefahrgutklassen-Symbole (Bilder): stammen aus Wikimedia Commons/Wikipedia-Dateiseiten. "
-  "Die Lizenzen sind je Datei unterschiedlich (Public Domain/CC0 sowie CC BY-SA/GFDL). "
+  "Die Lizenzen sind je Datei unterschiedlich (Public Domain/CC0 sowie CC BY-SA/GFDL). " 
   "Die Symbole wurden ggf. konvertiert (z.B. SVG → PNG) und skaliert.\n\n"
 
   "Quelle/Autorenhinweis: Wikimedia Commons contributors / die jeweils auf der Dateiseite genannten Autoren.\n"
@@ -150,7 +151,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   static const _prefDisclaimerAccepted = 'disclaimer_accepted_v1';
 
-  static const String _appVersion = "v1.2.2";
+  static const String _appVersion = "v1.2.3";
   static const String _repoUrl = "https://github.com/Inqsane/UN-Nummern-Sammler";
   static const String _releasesUrl =
       "https://github.com/Inqsane/UN-Nummern-Sammler/releases";
@@ -199,36 +200,65 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _maybeShowDisclaimer() async {
-    final prefs = await SharedPreferences.getInstance();
-    final accepted = prefs.getBool(_prefDisclaimerAccepted) ?? false;
-    if (accepted) return;
+  final prefs = await SharedPreferences.getInstance();
+  final accepted = prefs.getBool(_prefDisclaimerAccepted) ?? false;
+  if (accepted) return;
 
-    if (!mounted) return;
+  if (!mounted) return;
 
-    await showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        title: const Text('Wichtiger Hinweis'),
-        content: const SingleChildScrollView(
-          child: Text(
-            'Alle Informationen in dieser App sind ohne Gewähr und können falsch oder unvollständig sein.\n\n'
-            'Nutze diese App NICHT für sicherheitskritische Zwecke.\n\n'
-            'Wenn du Fehler findest, melde sie bitte dem Developer (z.B. über GitHub / Discord).',
-          ),
-        ),
-        actions: [
-          FilledButton(
-            onPressed: () async {
-              await prefs.setBool(_prefDisclaimerAccepted, true);
-              if (ctx.mounted) Navigator.pop(ctx);
-            },
-            child: const Text('Verstanden'),
-          ),
-        ],
-      ),
-    );
-  }
+  await showDialog<void>(
+    context: context,
+    barrierDismissible: false,
+    builder: (ctx) {
+      int secondsLeft = 5;
+      bool canClose = false;
+      Timer? timer;
+
+      return StatefulBuilder(
+        builder: (context, setState) {
+          timer ??= Timer.periodic(const Duration(seconds: 1), (_) {
+            setState(() {
+              secondsLeft--;
+              if (secondsLeft <= 0) {
+                secondsLeft = 0;
+                canClose = true;
+                timer?.cancel();
+                timer = null;
+              }
+            });
+          });
+
+          return AlertDialog(
+            title: const Text('Wichtiger Hinweis'),
+            content: const SingleChildScrollView(
+              child: Text(
+                'Alle Informationen in dieser App sind ohne Gewähr und können falsch oder unvollständig sein.\n\n'
+                'Nutze diese App NICHT für sicherheitskritische Zwecke.\n\n'
+                'Wenn du Fehler findest, melde sie bitte dem Developer (z.B. über GitHub / Discord).\n\n'
+                'Die App bzw. Inqsane Studios ist keine offizielle Anwendung einer Behörde und steht in keiner Verbindung zu staatlichen Stellen.',
+              ),
+            ),
+            actions: [
+              FilledButton(
+                onPressed: canClose
+                    ? () async {
+                        timer?.cancel();
+                        await prefs.setBool(_prefDisclaimerAccepted, true);
+                        if (ctx.mounted) Navigator.pop(ctx);
+                      }
+                    : null,
+                child: Text(
+                  canClose ? 'Verstanden' : 'Verstanden (${secondsLeft}s)',
+                ),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+}
+
 
   Future<void> loadData() async {
     final String jsonString = await rootBundle.loadString(
@@ -1065,7 +1095,8 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             const Spacer(),
             Text(
-              "Alle Informationen ohne Gewähr. Nicht für sicherheitskritische Zwecke verwenden.",
+              "Alle Informationen ohne Gewähr. Nicht für sicherheitskritische Zwecke verwenden.\n\n"
+              "Die App steht in keiner Verbindung zu offiziellen Behörden.",
               style: Theme.of(context).textTheme.bodySmall,
               textAlign: TextAlign.center,
             ),
@@ -2196,6 +2227,7 @@ class LicensesSourcesPage extends StatelessWidget {
     const symbolsSource = "https://de.wikipedia.org/wiki/Gefahrgutklasse";
     const unListSource = "https://en.wikipedia.org/wiki/Lists_of_UN_numbers";
     const ccBySa = "https://creativecommons.org/licenses/by-sa/4.0/";
+    const officiallink = "https://unece.org/transport/dangerous-goods/adr";
 
     return Scaffold(
       appBar: AppBar(title: const Text("Lizenzen / Quellen")),
@@ -2222,59 +2254,46 @@ class LicensesSourcesPage extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Card(
-            elevation: 0,
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            child: Column(
-              children: [
-                ListTile(
-                  leading: const Icon(Icons.list_alt_outlined),
-                  title: const Text("Liste der UN-Nummern"),
-                  subtitle: const Text(unListSource),
-                  onTap: () => _openExternal(context, unListSource),
-                ),
-                const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Icons.image_outlined),
-                  title: const Text("Bilder / Symbole (Gefahrgutklassen)"),
-                  subtitle: const Text(symbolsSource),
-                  onTap: () => _openExternal(context, symbolsSource),
-                ),
-                const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Icons.gavel_outlined),
-                  title: const Text("Lizenzen (Übersicht)"),
-                  subtitle: const Text(
-                    "CC BY-SA / CC0 / Public Domain / GFDL (siehe oben)",
-                  ),
-                  onTap: () => _openExternal(
-                    context,
-                    "https://commons.wikimedia.org/wiki/Commons:Licensing",
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            "Open‑Source Lizenzen",
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
-          const SizedBox(height: 8),
-          Card(
-            elevation: 0,
-            color: Theme.of(context).colorScheme.surfaceContainerHighest,
-            child: ListTile(
-              leading: const Icon(Icons.code),
-              title: const Text("Flutter / Package Lizenzen anzeigen"),
-              subtitle: const Text("Automatisch generierte Lizenzliste"),
-              onTap: () {
-                showLicensePage(
-                  context: context,
-                  applicationName: "UN Sammler",
-                );
-              },
-            ),
-          ),
+  elevation: 0,
+  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+  child: Column(
+    children: [
+      ListTile(
+        leading: const Icon(Icons.verified_outlined),
+        title: const Text("Offizielle Quelle (UN/ECE) - ADR"),
+        subtitle: const Text(officiallink),
+        onTap: () => _openExternal(context, officiallink),
+      ),
+      const Divider(height: 1),
+
+      ListTile(
+        leading: const Icon(Icons.list_alt_outlined),
+        title: const Text("Liste der UN-Nummern"),
+        subtitle: const Text(unListSource),
+        onTap: () => _openExternal(context, unListSource),
+      ),
+      const Divider(height: 1),
+
+      ListTile(
+        leading: const Icon(Icons.image_outlined),
+        title: const Text("Bilder / Symbole (Gefahrgutklassen)"),
+        subtitle: const Text(symbolsSource),
+        onTap: () => _openExternal(context, symbolsSource),
+      ),
+      const Divider(height: 1),
+
+      ListTile(
+        leading: const Icon(Icons.gavel_outlined),
+        title: const Text("Lizenzen (Übersicht)"),
+        subtitle: const Text("CC BY-SA / CC0 / Public Domain / GFDL (siehe oben)"),
+        onTap: () => _openExternal(
+          context,
+          "https://commons.wikimedia.org/wiki/Commons:Licensing",
+        ),
+      ),
+    ],
+  ),
+),
         ],
       ),
     );
