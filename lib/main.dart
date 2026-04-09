@@ -135,8 +135,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  Map<String, Map<String, String>> datenbank = {}; // UN -> {name, klasse}
-  Map<String, String> gespeicherteUNs = {}; // UN -> savedDate (dd.MM.yyyy)
+  Map<String, Map<String, String>> datenbank = {};
+  Map<String, String> gespeicherteUNs = {};
 
   final TextEditingController unController = TextEditingController();
   String? unName;
@@ -148,7 +148,6 @@ class _HomeScreenState extends State<HomeScreen> {
   static const _prefSearchProvider = 'setting_search_provider';
   static const _prefConfirmDeleteAll = 'setting_confirm_delete_all';
 
-  // First-run disclaimer
   static const _prefDisclaimerAccepted = 'disclaimer_accepted_v1';
 
   static const String _appVersion = "v1.2.1";
@@ -157,7 +156,6 @@ class _HomeScreenState extends State<HomeScreen> {
       "https://github.com/Inqsane/UN-Nummern-Sammler/releases";
   static const String _discordId = "Inqsane";
 
-  // Play Store (manuell gepflegte Version über JSON im Repo)
   static const String _playStoreUrl =
       "https://play.google.com/store/apps/details?id=com.inqsane.un_sammler";
 
@@ -188,7 +186,6 @@ class _HomeScreenState extends State<HomeScreen> {
     Future.microtask(fetchLatestRelease);
     Future.microtask(fetchPlayStoreLatestVersion);
 
-    // show disclaimer once (after first frame)
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _maybeShowDisclaimer();
     });
@@ -233,7 +230,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // DB laden
   Future<void> loadData() async {
     final String jsonString = await rootBundle.loadString(
       'assets/un_with_class.json',
@@ -685,7 +681,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final prefs = await SharedPreferences.getInstance();
 
-    // remove all UN keys (not just those currently in memory)
     final keys = prefs.getKeys();
     final unKeys = keys.where((k) => RegExp(r'^\d{1,4}$').hasMatch(k));
     for (final k in unKeys) {
@@ -1184,7 +1179,6 @@ Widget build(BuildContext context) {
         const SizedBox(height: 16),
         const Divider(),
 
-        // --- GitHub ---
         ListTile(
           contentPadding: EdgeInsets.zero,
           leading: const Icon(Icons.system_update_alt),
@@ -1206,7 +1200,6 @@ Widget build(BuildContext context) {
             ),
           ),
 
-        // --- Play-JSON (google_play_ver.json) ---
         ListTile(
           contentPadding: EdgeInsets.zero,
           leading: const Icon(Icons.shop_outlined),
