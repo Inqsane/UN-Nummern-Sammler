@@ -135,7 +135,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  Map<String, Map<String, String>> datenbank = {};
+  Map<String, Map<String, String>> datenbank = {}; 
   Map<String, String> gespeicherteUNs = {};
 
   final TextEditingController unController = TextEditingController();
@@ -1508,8 +1508,8 @@ class LexikonDetailPage extends StatelessWidget {
             tooltip: "Teilen",
             icon: const Icon(Icons.share),
             onPressed: () {
-              final text = "UN $un – $name"
-                  "${(k != null && k.isNotEmpty) ? " – Klasse $k" : ""}";
+              final text = "UN $un - $name"
+                  "${(k != null && k.isNotEmpty) ? " - Klasse $k" : ""}";
               Share.share(text, subject: "UN $un");
             },
           ),
@@ -2087,96 +2087,96 @@ class AdrInfo {
 
 const Map<String, AdrInfo> adrInfoByClass = {
   "1": AdrInfo(
-    title: "Klasse 1 – Explosive Stoffe und Gegenstände",
+    title: "Klasse 1 - Explosive Stoffe und Gegenstände",
     description:
         "Stoffe und Gegenstände, die durch chemische Reaktion Gase bei hoher Temperatur und hohem Druck entwickeln können und dadurch Explosionen verursachen.",
     examples: ["Feuerwerkskörper", "Munition"],
     notes: ["Strenge Verpackungs- und Transportvorschriften."],
   ),
   "2.1": AdrInfo(
-    title: "Klasse 2.1 – Entzündbare Gase",
+    title: "Klasse 2.1 - Entzündbare Gase",
     description:
         "Gase, die sich leicht entzünden können und mit Luft explosive Gemische bilden.",
     examples: ["Propan", "Butan"],
     notes: ["Zündquellen vermeiden, ausreichende Belüftung."],
   ),
   "2.2": AdrInfo(
-    title: "Klasse 2.2 – Nicht entzündbare, nicht giftige Gase",
+    title: "Klasse 2.2 - Nicht entzündbare, nicht giftige Gase",
     description:
         "Gase, die weder entzündbar noch giftig sind, aber durch Druck/Ersticken gefährlich sein können.",
     examples: ["Stickstoff", "Kohlendioxid"],
-    notes: ["Behälter unter Druck – vor Hitze schützen."],
+    notes: ["Behälter unter Druck - vor Hitze schützen."],
   ),
   "2.3": AdrInfo(
-    title: "Klasse 2.3 – Giftige Gase",
+    title: "Klasse 2.3 - Giftige Gase",
     description:
         "Gase, die beim Einatmen schwere Gesundheitsschäden verursachen können.",
     examples: ["Chlor", "Ammoniak (je nach Einstufung)"],
-    notes: ["Sehr gefährlich – Schutzmaßnahmen/Notfallplanung wichtig."],
+    notes: ["Sehr gefährlich - Schutzmaßnahmen/Notfallplanung wichtig."],
   ),
   "3": AdrInfo(
-    title: "Klasse 3 – Entzündbare Flüssigkeiten",
+    title: "Klasse 3 - Entzündbare Flüssigkeiten",
     description:
         "Flüssigkeiten (oder flüssige Gemische), die leicht entzündlich sind und brennbare Dämpfe bilden.",
     examples: ["Benzin (UN 1203)", "Ethanol"],
     notes: ["Zündquellen vermeiden, dicht verschließen."],
   ),
   "4.1": AdrInfo(
-    title: "Klasse 4.1 – Entzündbare feste Stoffe / selbstreaktive Stoffe",
+    title: "Klasse 4.1 - Entzündbare feste Stoffe / selbstreaktive Stoffe",
     description:
         "Feste Stoffe, die leicht entzündbar sind, oder selbstreaktive Stoffe, die gefährlich reagieren können.",
     examples: ["Streichhölzer (je nach Einstufung)"],
   ),
   "4.2": AdrInfo(
-    title: "Klasse 4.2 – Selbstentzündliche Stoffe",
+    title: "Klasse 4.2 - Selbstentzündliche Stoffe",
     description:
         "Stoffe, die sich bei Kontakt mit Luft selbst entzünden können.",
     examples: ["Weißer Phosphor (Beispiel)"],
   ),
   "4.3": AdrInfo(
-    title: "Klasse 4.3 – Stoffe, die mit Wasser entzündbare Gase entwickeln",
+    title: "Klasse 4.3 - Stoffe, die mit Wasser entzündbare Gase entwickeln",
     description:
         "Stoffe, die bei Berührung mit Wasser gefährliche Mengen entzündbarer Gase freisetzen.",
     examples: ["Natrium (Beispiel)"],
   ),
   "5.1": AdrInfo(
-    title: "Klasse 5.1 – Oxidierende Stoffe",
+    title: "Klasse 5.1 - Oxidierende Stoffe",
     description:
         "Stoffe, die Sauerstoff abgeben oder eine Verbrennung stark fördern können.",
     examples: ["Ammoniumnitrat (Beispiel)"],
   ),
   "5.2": AdrInfo(
-    title: "Klasse 5.2 – Organische Peroxide",
+    title: "Klasse 5.2 - Organische Peroxide",
     description:
         "Stoffe, die thermisch instabil sind und zu heftigen Reaktionen neigen können.",
     examples: ["MEKP (Beispiel)"],
   ),
   "6.1": AdrInfo(
-    title: "Klasse 6.1 – Giftige Stoffe",
+    title: "Klasse 6.1 - Giftige Stoffe",
     description:
         "Stoffe, die beim Verschlucken, Einatmen oder Hautkontakt gesundheitsschädlich oder tödlich sein können.",
     examples: ["Pestizide (Beispiel)"],
   ),
   "6.2": AdrInfo(
-    title: "Klasse 6.2 – Ansteckungsgefährliche Stoffe",
+    title: "Klasse 6.2 - Ansteckungsgefährliche Stoffe",
     description:
         "Stoffe, von denen bekannt ist oder anzunehmen ist, dass sie Krankheitserreger enthalten.",
     examples: ["Medizinische Proben (Beispiel)"],
   ),
   "7": AdrInfo(
-    title: "Klasse 7 – Radioaktive Stoffe",
+    title: "Klasse 7 - Radioaktive Stoffe",
     description:
         "Stoffe, die ionisierende Strahlung aussenden und besondere Schutzmaßnahmen erfordern.",
     examples: ["Radioaktive Isotope (Beispiel)"],
   ),
   "8": AdrInfo(
-    title: "Klasse 8 – Ätzende Stoffe",
+    title: "Klasse 8 - Ätzende Stoffe",
     description:
         "Stoffe, die bei Kontakt Gewebe zerstören oder Materialien stark angreifen können.",
     examples: ["Schwefelsäure", "Natronlauge"],
   ),
   "9": AdrInfo(
-    title: "Klasse 9 – Verschiedene gefährliche Stoffe und Gegenstände",
+    title: "Klasse 9 - Verschiedene gefährliche Stoffe und Gegenstände",
     description:
         "Stoffe/Gegenstände, die während des Transports eine Gefahr darstellen, aber keiner anderen Klasse eindeutig zugeordnet sind.",
     examples: ["Lithium-Ionen-Batterien (Beispiel)"],
