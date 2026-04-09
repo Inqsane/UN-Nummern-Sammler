@@ -150,7 +150,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   static const _prefDisclaimerAccepted = 'disclaimer_accepted_v1';
 
-  static const String _appVersion = "v1.2.1";
+  static const String _appVersion = "v1.2.2";
   static const String _repoUrl = "https://github.com/Inqsane/UN-Nummern-Sammler";
   static const String _releasesUrl =
       "https://github.com/Inqsane/UN-Nummern-Sammler/releases";
